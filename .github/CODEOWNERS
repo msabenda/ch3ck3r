@@ -1,0 +1,9 @@
+# Default ownership
+* @msabenda
+
+# Security-sensitive extension surfaces
+/vscode-extension/src/scanner/ @msabenda
+/vscode-extension/src/utils/backendClient.js @msabenda
+/vscode-extension/src/utils/reportGenerator.js @msabenda
+/vscode-extension/scripts/ @msabenda
+/.github/workflows/ @msabenda

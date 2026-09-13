@@ -1,0 +1,62 @@
+name: Release VS Code Extension
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Verify tag matches extension version
+        shell: bash
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          test "$GITHUB_REF_NAME" = "$expected" || {
+            echo "Tag $GITHUB_REF_NAME does not match package version $expected" >&2
+            exit 1
+          }
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test and inspect source
+        run: |
+          npm run check
+          npm test
+          npm audit --audit-level=high
+          npm run security:gates
+
+      - name: Build release artifacts
+        run: |
+          npm run package:vsix
+          npm run security:gates
+          npm run sbom
+
+      - name: Attest VSIX provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: vscode-extension/*.vsix
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" ./*.vsix ./sbom.cdx.json --verify-tag --generate-notes

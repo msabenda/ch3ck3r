@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a focused improvement
+title: "[Feature]: "
+labels: [enhancement, triage]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options: [VS Code extension, Detection rule, OpenAPI analysis, Reports/SARIF, Backend, Dashboard, Documentation]
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What security or developer-workflow problem should be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+    validations:
+      required: true
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Accuracy, privacy, or security considerations
+      description: Describe likely false positives, trust boundaries, or data handling changes.

@@ -1,0 +1,99 @@
+name: VS Code Extension Security
+
+on:
+  push:
+    paths:
+      - 'vscode-extension/**'
+      - '.github/workflows/vscode-extension.yml'
+  pull_request:
+    paths:
+      - 'vscode-extension/**'
+      - '.github/workflows/vscode-extension.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-package:
+    name: Test and inspect VSIX
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Install locked dependencies
+        working-directory: vscode-extension
+        run: npm ci --ignore-scripts
+
+      - name: Syntax checks
+        working-directory: vscode-extension
+        run: npm run check
+
+      - name: Assertion tests with coverage
+        working-directory: vscode-extension
+        run: npm run test:coverage
+
+      - name: Dependency audit
+        working-directory: vscode-extension
+        run: npm audit --audit-level=high
+
+      - name: Source secret gate
+        working-directory: vscode-extension
+        run: npm run security:gates
+
+      - name: Package extension
+        working-directory: vscode-extension
+        run: npm run package:vsix
+
+      - name: Inspect package allowlist
+        working-directory: vscode-extension
+        run: npm run security:gates
+
+      - name: Generate CycloneDX SBOM
+        working-directory: vscode-extension
+        run: npm run sbom
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch3ck3r-vscode-extension
+          path: |
+            vscode-extension/*.vsix
+            vscode-extension/sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 14
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  codeql:
+    name: CodeQL JavaScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v3

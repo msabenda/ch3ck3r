@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/msabenda/ch3ck3r/security/advisories/new
+    about: Report vulnerabilities privately; never post real secrets in an issue.
+  - name: Usage and design discussions
+    url: https://github.com/msabenda/ch3ck3r/discussions
+    about: Ask questions and discuss ideas with the community.
