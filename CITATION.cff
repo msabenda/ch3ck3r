@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "Ch3ck3r: Open-source API security tooling"
+message: "If Ch3ck3r supports your research or teaching, please cite this repository."
+type: software
+authors:
+  - family-names: Ndaga
+    given-names: Msambili
+    alias: msabenda
+repository-code: "https://github.com/msabenda/ch3ck3r"
+url: "https://github.com/msabenda/ch3ck3r"
+license: MIT
+version: 1.2.0
+date-released: 2026-08-23
+keywords:
+  - API security
+  - static application security testing
+  - OWASP API Security Top 10
+  - DevSecOps
