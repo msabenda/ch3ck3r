@@ -1,0 +1,40 @@
+{
+  "name": "ch3ck3r-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2",
+    "clsx": "^2.1",
+    "dayjs": "^1.11",
+    "lucide-react": "^0.490",
+    "next": "^15.3.1",
+    "react": "^19.1",
+    "react-dom": "^19.1",
+    "react-hot-toast": "^2.5",
+    "recharts": "^2.15",
+    "swr": "^2.3",
+    "tailwindcss": "^3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17",
+    "@types/react": "^19.1",
+    "@types/react-dom": "^19.1",
+    "autoprefixer": "^10.4",
+    "typescript": "^5.7",
+    "postcss": "^8.5"
+  },
+  "overrides": {
+    "cookie": "0.7.2",
+    "cross-spawn": "7.0.6",
+    "elliptic": "6.6.1",
+    "path-to-regexp": "6.3.0",
+    "semver": "7.6.3",
+    "word-wrap": "1.2.5"
+  }
+}

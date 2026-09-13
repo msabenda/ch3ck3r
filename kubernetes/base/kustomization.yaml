@@ -1,0 +1,17 @@
+# Ch3ck3r — Kustomize Base
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ch3ck3r
+
+resources:
+  - postgres.yaml
+  - redis.yaml
+  - backend.yaml
+  - frontend.yaml
+  - celery-worker.yaml
+  - ingress-network-policy.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: ch3ck3r

@@ -1,0 +1,121 @@
+# Ch3ck3r — Backend API Deployment
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  labels:
+    app.kubernetes.io/name: ch3ck3r
+    app.kubernetes.io/component: backend
+data:
+  APP_NAME: "Ch3ck3r"
+  APP_VERSION: "0.1.0"
+  DEBUG: "false"
+  LOG_LEVEL: "INFO"
+  JSON_LOGS: "true"
+  CORS_ORIGINS: "https://ch3ck3r.example.com"
+  DATABASE_URL: "postgresql+asyncpg://ch3ck3r:$(POSTGRES_PASSWORD)@postgres:5432/ch3ck3r"
+  REDIS_URL: "redis://redis:6379/0"
+  CELERY_BROKER_URL: "redis://redis:6379/1"
+  CELERY_RESULT_BACKEND: "redis://redis:6379/2"
+  SCAN_TIMEOUT_SECONDS: "300"
+  MAX_CONCURRENT_SCANS: "10"
+  SCAN_RESULT_RETENTION_DAYS: "90"
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS: "200"
+  RATE_LIMIT_WINDOW_SECONDS: "60"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app.kubernetes.io/name: ch3ck3r
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ch3ck3r
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ch3ck3r
+        app.kubernetes.io/component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/msabenda/ch3ck3r-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+            - containerPort: 8000
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ch3ck3r-secrets
+                  key: secret-key
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ch3ck3r-secrets
+                  key: postgres-password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 2
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app.kubernetes.io/name: ch3ck3r
+    app.kubernetes.io/component: backend
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ch3ck3r
+    app.kubernetes.io/component: backend

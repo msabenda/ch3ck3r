@@ -1,0 +1,57 @@
+# Ch3ck3r — Dev Overlay
+# Smaller replicas, debug enabled, local images
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ch3ck3r-dev
+
+resources:
+  - ../base
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+
+  - patch: |-
+      - op: replace
+        path: /data/DEBUG
+        value: "true"
+      - op: replace
+        path: /data/CORS_ORIGINS
+        value: "*"
+    target:
+      kind: ConfigMap
+      name: backend-config
+
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: StatefulSet
+      name: postgres
+
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: celery-worker
+
+  - patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: "5Gi"
+    target:
+      kind: PersistentVolumeClaim
+
+images:
+  - name: ghcr.io/msabenda/ch3ck3r-backend
+    newTag: dev
+  - name: ghcr.io/msabenda/ch3ck3r-frontend
+    newTag: dev
