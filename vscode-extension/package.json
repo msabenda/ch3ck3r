@@ -1,0 +1,376 @@
+{
+  "name": "ch3ck3r-sast",
+  "displayName": "Ch3ck3r SAST - API Security Scanner",
+  "description": "SAST for API Security & Web Security. OWASP API Top 10 detection, inline diagnostics, and code analysis for DevSecOps.",
+  "version": "1.2.0",
+  "license": "MIT",
+  "publisher": "remnant01",
+  "icon": "media/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/msabenda/ch3ck3r"
+  },
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Security",
+    "Other"
+  ],
+  "keywords": [
+    "sast",
+    "api-security",
+    "owasp",
+    "api-top-10",
+    "devsecops",
+    "security",
+    "static-analysis",
+    "vulnerability-scanner",
+    "ch3ck3r",
+    "security-linter",
+    "sarif",
+    "openapi",
+    "swagger"
+  ],
+  "galleryBanner": {
+    "color": "#0a0a1a",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:ch3ck3r.scanFile",
+    "onCommand:ch3ck3r.scanFolder",
+    "onCommand:ch3ck3r.scanOpenApi",
+    "onCommand:ch3ck3r.connectBackend",
+    "onCommand:ch3ck3r.clearBackendToken",
+    "onCommand:ch3ck3r.showReport",
+    "onCommand:ch3ck3r.clearFindings",
+    "onCommand:ch3ck3r.excludeFile",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:python",
+    "onLanguage:go",
+    "onLanguage:java",
+    "onLanguage:ruby",
+    "onLanguage:rust",
+    "onLanguage:yaml",
+    "onLanguage:json",
+    "onLanguage:dockerfile",
+    "onLanguage:terraform",
+    "onLanguage:kubernetes"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ch3ck3r.scanFile",
+        "title": "Ch3ck3r: Scan Current File",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "ch3ck3r.scanFolder",
+        "title": "Ch3ck3r: Scan Workspace Folder",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "ch3ck3r.scanOpenApi",
+        "title": "Ch3ck3r: Scan OpenAPI/Swagger Spec",
+        "icon": "$(api)"
+      },
+      {
+        "command": "ch3ck3r.connectBackend",
+        "title": "Ch3ck3r: Connect to Ch3ck3r Backend",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "ch3ck3r.clearBackendToken",
+        "title": "Ch3ck3r: Delete Stored Backend Token",
+        "icon": "$(key)"
+      },
+      {
+        "command": "ch3ck3r.showReport",
+        "title": "Ch3ck3r: Show Scan Report",
+        "icon": "$(report)"
+      },
+      {
+        "command": "ch3ck3r.clearFindings",
+        "title": "Ch3ck3r: Clear All Findings",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "ch3ck3r.excludeFile",
+        "title": "Ch3ck3r: Exclude File from Scanning",
+        "icon": "$(exclude)"
+      },
+      {
+        "command": "ch3ck3r.toggleInlineDiagnostics",
+        "title": "Ch3ck3r: Toggle Inline Diagnostics",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "ch3ck3r.runFullScan",
+        "title": "Ch3ck3r: Run Full Security Scan (Backend)",
+        "icon": "$(debug-start)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ch3ck3r.scanFile",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId =~ /javascript|typescript|python|go|java|ruby|rust|yaml|json/",
+          "command": "ch3ck3r.scanFile",
+          "group": "7_modification@1"
+        },
+        {
+          "when": "resourceLangId =~ /yaml|json/",
+          "command": "ch3ck3r.scanOpenApi",
+          "group": "7_modification@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ch3ck3r.scanFile",
+          "when": "resourceLangId =~ /javascript|typescript|python|go|java|ruby|rust|yaml|json/",
+          "group": "7_modification@1"
+        },
+        {
+          "command": "ch3ck3r.excludeFile",
+          "group": "7_modification@2"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "ch3ck3r.scanFile",
+          "when": "resourceLangId =~ /javascript|typescript|python|go|java|ruby|rust|yaml|json/",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "ch3ck3r.scanFolder",
+          "when": "view == ch3ck3rFindings",
+          "group": "navigation"
+        },
+        {
+          "command": "ch3ck3r.clearFindings",
+          "when": "view == ch3ck3rFindings",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ch3ck3r SAST",
+      "properties": {
+        "ch3ck3r.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable Ch3ck3r SAST scanning"
+        },
+        "ch3ck3r.severityThreshold": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "info"
+          ],
+          "default": "medium",
+          "description": "Minimum severity level to report as diagnostics"
+        },
+        "ch3ck3r.autoScanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scan files on save"
+        },
+        "ch3ck3r.autoScanOnOpen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically scan files when opened"
+        },
+        "ch3ck3r.showInlineDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show findings as inline editor diagnostics"
+        },
+        "ch3ck3r.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Ch3ck3r status in the status bar"
+        },
+        "ch3ck3r.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/build/**",
+            "**/.git/**",
+            "**/__pycache__/**",
+            "**/*.min.*",
+            "**/*.bundle.*",
+            "**/vendor/**"
+          ],
+          "description": "Glob patterns for files to exclude from scanning"
+        },
+        "ch3ck3r.maxFileSizeKB": {
+          "type": "number",
+          "default": 500,
+          "description": "Maximum file size in KB to scan (0 = unlimited)"
+        },
+        "ch3ck3r.backendUrl": {
+          "type": "string",
+          "default": "",
+          "description": "URL of the Ch3ck3r backend server (e.g., http://localhost:8000)",
+          "scope": "machine"
+        },
+        "ch3ck3r.semgrepPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to semgrep binary (optional — built-in rules don't require semgrep)",
+          "scope": "machine"
+        },
+        "ch3ck3r.owaspCategories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "API1:2023 - Broken Object Level Authorization",
+              "API2:2023 - Broken Authentication",
+              "API3:2023 - Broken Object Property Level Authorization",
+              "API4:2023 - Unrestricted Resource Consumption",
+              "API5:2023 - Broken Function Level Authorization",
+              "API6:2023 - Unrestricted Access to Sensitive Business Flows",
+              "API7:2023 - Server Side Request Forgery",
+              "API8:2023 - Security Misconfiguration",
+              "API9:2023 - Improper Assets Management",
+              "API10:2023 - Unsafe Consumption of APIs"
+            ]
+          },
+          "default": [],
+          "description": "Filter scan results by specific OWASP API Top 10 categories (empty = all)"
+        },
+        "ch3ck3r.reportFormat": {
+          "type": "string",
+          "enum": [
+            "sarif",
+            "json",
+            "markdown",
+            "html"
+          ],
+          "default": "sarif",
+          "description": "Report output format"
+        },
+        "ch3ck3r.autoScanOnStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Scan the workspace after activation (disabled by default)"
+        },
+        "ch3ck3r.scanDebounceMs": {
+          "type": "number",
+          "default": 500,
+          "minimum": 100,
+          "maximum": 10000,
+          "description": "Delay before automatic scans after file activity"
+        },
+        "ch3ck3r.maxWorkspaceFiles": {
+          "type": "number",
+          "default": 5000,
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Maximum files considered during a workspace scan"
+        },
+        "ch3ck3r.maxScanConcurrency": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Maximum files analyzed concurrently"
+        }
+      }
+    },
+    "views": {
+      "ch3ck3rExplorer": [
+        {
+          "id": "ch3ck3rFindings",
+          "name": "API Security Findings",
+          "type": "tree"
+        },
+        {
+          "id": "ch3ck3rSummary",
+          "name": "Scan Summary",
+          "type": "tree"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ch3ck3rExplorer",
+          "title": "Ch3ck3r API Security",
+          "icon": "media/shield-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": {
+      "ch3ck3rFindings": [
+        {
+          "condition": "ch3ck3r.showWelcomeOnStart",
+          "text": "[Scan a file](command:ch3ck3r.scanFile)\n[Scan workspace](command:ch3ck3r.scanFolder)\n[Connect to backend](command:ch3ck3r.connectBackend)\n\nCh3ck3r SAST scans your code for OWASP API Top 10 vulnerabilities."
+        }
+      ]
+    },
+    "problemMatchers": [
+      {
+        "name": "ch3ck3r",
+        "label": "Ch3ck3r API Security",
+        "owner": "ch3ck3r",
+        "fileLocation": [
+          "absolute"
+        ],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(\\w+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test test/security/*.test.js",
+    "test:legacy": "node test/runner.js",
+    "check": "node scripts/check.js",
+    "package:check": "vsce ls",
+    "test:coverage": "node --experimental-test-coverage --test test/security/*.test.js",
+    "audit": "npm audit --audit-level=high",
+    "package:vsix": "vsce package --no-dependencies",
+    "sbom": "node scripts/generate-sbom.js",
+    "security:gates": "node scripts/security-gates.js"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "3.9.2"
+  },
+  "homepage": "https://github.com/msabenda/ch3ck3r#readme",
+  "bugs": {
+    "url": "https://github.com/msabenda/ch3ck3r/issues"
+  },
+  "qna": "https://github.com/msabenda/ch3ck3r/discussions",
+  "extensionKind": [
+    "workspace"
+  ],
+  "pricing": "Free",
+  "markdown": "github"
+}

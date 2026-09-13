@@ -1,0 +1,17 @@
+node_modules/
+.vscode-test/
+.vscode/
+*.vsix
+test/
+out/
+*.tsbuildinfo
+cli-demo.js
+BASELINE_AUDIT.md
+IMPLEMENTATION_PLAN.md
+THREAT_MODEL.md
+scripts/
+package-lock.json
+sbom*.json
+MIGRATION.md
+RELEASE_CHECKLIST.md
+FINAL_VERIFICATION.md
